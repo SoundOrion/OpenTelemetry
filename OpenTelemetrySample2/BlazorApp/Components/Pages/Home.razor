@@ -1,0 +1,47 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+
+<PageTitle>Home</PageTitle>
+
+<h1>Real-Time Notifications Using Blazor and SignalR from scratch</h1>
+
+Welcome to your new app.
+<hr/>
+Messages from the Server 👇
+
+<ul id="messagesList">
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@code {
+    private HubConnection? hubConnection;
+    private List<string> messages = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://webapi:80/notifications",
+            o => o.AccessTokenProvider = () => Task.FromResult<string?>("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFub255bW91cyIsInN1YiI6ImFub255bW91cyIsImp0aSI6IjllYzQyYmUiLCJhdWQiOlsiaHR0cDovL2xvY2FsaG9zdDo1NDM3NiIsImh0dHBzOi8vbG9jYWxob3N0OjQ0Mzg0IiwiaHR0cDovL2xvY2FsaG9zdDo1MDYyIiwiaHR0cHM6Ly9sb2NhbGhvc3Q6NzI0NiJdLCJuYmYiOjE3MDY5MTE5NjksImV4cCI6MTcxNDY4Nzk2OSwiaWF0IjoxNzA2OTExOTcwLCJpc3MiOiJkb3RuZXQtdXNlci1qd3RzIn0.DZ37jxHwi-wvGjJvgCu09QtTeO_ln3kG3NAKjlw5dCI"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<string>("ReceiveNotification", (message) =>
+        {
+            messages.Add(message);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
