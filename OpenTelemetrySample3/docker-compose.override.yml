@@ -1,0 +1,90 @@
+version: '3.4'
+
+services:
+  otel-collector:
+    restart: always
+    command: ["--config=/etc/otel-collector.yml"]
+    volumes:
+      - ./config/opentelemetry/otel-collector.yml:/etc/otel-collector.yml
+    # ports:
+    #   - "1888:1888"   # pprof extension
+    #   - "8888:8888"   # Prometheus metrics exposed by the collector
+    #   - "8889:8889"   # Prometheus exporter metrics
+    #   - "13133:13133" # health_check extension
+    #   - "4317:4317"   # OTLP gRPC receiver
+    #   - "4318:4318"   # OTLP HTTP receiver
+    #   - "55679:55679" # zpages extension
+    depends_on:
+      - jaeger
+      - loki
+
+  prometheus:
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    #command:
+    #  - '--config.file=/etc/prometheus/prometheus.yml'
+    #  - --enable-feature=remote-write-receiver
+    depends_on:
+      - otel-collector
+
+  jaeger:
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      - LOG_LEVEL=debug
+
+  loki:
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/config/loki-config.yml
+    volumes:
+      - ./config/loki/loki-config.yaml:/etc/config/loki-config.yml
+
+  grafana:
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana/config:/etc/grafana
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+    # environment:
+    #   - GF_AUTH_ANONYMOUS_ENABLED=true
+    #   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    #   - GF_AUTH_DISABLE_LOGIN_FORM=true
+    #   - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+
+  blazorapp:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ASPNETCORE_HTTP_PORTS=80
+      - ASPNETCORE_HTTPS_PORTS=81
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    ports:
+    - "8080:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - otel-collector
+
+  webapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ASPNETCORE_HTTP_PORTS=80
+      - ASPNETCORE_HTTPS_PORTS=81
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    ports:
+    - "8081:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - otel-collector
