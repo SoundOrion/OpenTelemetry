@@ -1,0 +1,4 @@
+現状promtailとtempoは
+
+grafana/promtail
+grafana/tempo
