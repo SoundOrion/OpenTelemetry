@@ -1,23 +1,27 @@
-app
+docker-compose build
+docker-compose up
+すればOK
+
+- app
 http://localhost:8081/swagger/index.html
 http://localhost:8080/
 
 
-otel-collector
+- otel-collector
 
-prometheus
+- prometheus
 http://localhost:9090
 http://host.docker.internal:9090
 
-jaeger
+- jaeger
 http://localhost:16686
 http://host.docker.internal:16686
 
-loki
+- loki
 http://localhost:3100
 http://host.docker.internal:3100
 
-grafana
+- grafana
 http://localhost:3000
 
 

@@ -3,13 +3,13 @@ version: '3.4'
 services:
 
   prometheus:
-    image: prom/prometheus:v2.45.2
+    image: prom/prometheus:v2.49.1
 
   jaeger:
     image: jaegertracing/all-in-one:1.53
 
   grafana:
-    image: grafana/grafana:9.5.15
+    image: grafana/grafana:10.3.1
 
   opentelemetrysample_a:
     image: ${DOCKER_REGISTRY-}opentelemetrysamplea
