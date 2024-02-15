@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   otel-collector:
+    container_name: otel-collector
     restart: always
     command: ["--config=/etc/otel-collector.yml"]
     volumes:
@@ -19,6 +20,7 @@ services:
       - loki
 
   prometheus:
+    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -30,6 +32,7 @@ services:
       - otel-collector
 
   jaeger:
+    container_name: jaeger
     ports:
       - "16686:16686"
       - "4317:4317"
@@ -37,6 +40,7 @@ services:
       - LOG_LEVEL=debug
 
   loki:
+    container_name: loki
     ports:
       - "3100:3100"
     command: -config.file=/etc/config/loki-config.yml
@@ -44,6 +48,7 @@ services:
       - ./config/loki/loki-config.yaml:/etc/config/loki-config.yml
 
   grafana:
+    container_name: grafana
     ports:
       - "3000:3000"
     volumes:
