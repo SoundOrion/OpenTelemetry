@@ -1,4 +1,4 @@
-現状promtailとtempoは
+現状promtailとtempoは未使用
 
 grafana/promtail
 grafana/tempo
